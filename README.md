@@ -19,9 +19,10 @@ Damda EV Component
 
 ## 버전 기록정보
 
-| 버전   | 날짜       | 내용 |
-| ------ | ---------- | ---- |
-| v1.0.0 | 2021.11.11 | 게시 |
+| 버전   | 날짜       | 내용                                                    |
+| ------ | ---------- | ------------------------------------------------------- |
+| v1.0.0 | 2021.11.11 | 게시                                                    |
+| v1.1.0 | 2021.12.05 | HA시작 속도에 영향을 주지 않도록 수정<br>기타 버그 수정 |
 
 <br/>
 
@@ -78,5 +79,5 @@ Damda EV Component
 - API key에는 공공데이터포털에서 발급받은 API 키를 입력.
 - Station name에는 위에서 찾은 측정소명을 입력.
 
-[version-shield]: https://img.shields.io/badge/version-v1.0.0-orange.svg
+[version-shield]: https://img.shields.io/badge/version-v1.1.0-orange.svg
 [hacs-shield]: https://img.shields.io/badge/HACS-Custom-red.svg

@@ -71,7 +71,9 @@ class DEVChargerSensor(DEVChargerDevice):
     @property
     def state(self):
         """Return the state of the sensor."""
-        return self.api.get_state(self.unique_id)
+        state = self.api.get_state(self.unique_id)
+        if state is not None:
+            return state
 
     @property
     def icon(self):
@@ -93,8 +95,6 @@ class DEVChargerSensor(DEVChargerDevice):
     def unit_of_measurement(self):
         """Return the unit of measurement of this sensor."""
         value = self.api.get_state(self.unique_id, DEVICE_UNIT)
-        if value == "":
-            return None
         return value
 
     @property
@@ -105,12 +105,8 @@ class DEVChargerSensor(DEVChargerDevice):
     @property
     def should_poll(self) -> bool:
         """Poll needed for this device."""
-        # entry_id = self.api.entry.entry_id
-        if "_updatetime" in self.unique_id:
-            return True
-            # return self.api.hass.data[DAMDA_DOMAIN][ENTRY_LIST][0] == entry_id
-        return False
+        return "_updatetime" in self.unique_id
 
     async def async_update(self):
         """Update API."""
-        await self.api.update()
+        await self.api.update(True)

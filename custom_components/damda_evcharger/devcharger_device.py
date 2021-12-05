@@ -89,20 +89,22 @@ class DEVChargerDevice(DEVChargerBase, RestoreEntity):
         """entity_registry_enabled_default."""
         return True
 
-    async def async_internal_added_to_hass(self):
+    async def async_added_to_hass(self):
         """Subscribe to device events."""
         self.register(self.unique_id, self.update_from_api)
-        last = await self.async_get_last_state()
-        try:
-            self._last_state = last.state
-        except Exception:
-            pass
+        last_state = await self.async_get_last_state()
+        if last_state:
+            self.async_restore_last_state(last_state)
         self.async_write_ha_state()
 
-    async def async_internal_will_remove_from_hass(self) -> None:
+    async def async_will_remove_from_hass(self) -> None:
         """Disconnect device object when removed."""
         self.api.set_entity(self.TYPE, self.unique_id, False)
-        self.register(self.unique_id)
+        self.register(self.unique_id, None)
+
+    @callback
+    def async_restore_last_state(self, last_state) -> None:
+        """Restore previous state."""
 
     @callback
     def async_update_callback(self):
@@ -118,8 +120,6 @@ class DEVChargerDevice(DEVChargerBase, RestoreEntity):
     @property
     def available(self):
         """Return True if device is available."""
-        if self.device_available is not True:
-            return False
         return True
 
     @property

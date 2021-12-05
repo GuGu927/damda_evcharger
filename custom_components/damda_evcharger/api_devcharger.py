@@ -166,6 +166,7 @@ class DamdaEVChargerAPI:
             BSENSOR_DOMAIN: {},
         }  # unique_id: True/False
         self.loaded = {SENSOR_DOMAIN: False, BSENSOR_DOMAIN: False}
+        self.last_charge = {}
         self.result = {}
         self.listeners = []
         self._start = False
@@ -289,9 +290,7 @@ class DamdaEVChargerAPI:
     def registered(self, unique_id):
         """Check unique_id is registered."""
         device = self.search_device(unique_id)
-        if device:
-            return device.get(unique_id).get(DEVICE_UPDATE) is not None
-        return False
+        return device.get(unique_id).get(DEVICE_UPDATE) is not None if device else False
 
     def get_entities(self, domain):
         """Get self.device from self.entites domain."""
@@ -323,9 +322,7 @@ class DamdaEVChargerAPI:
     def get_state(self, unique_id, target=DEVICE_STATE):
         """Get device state."""
         device = self.search_device(unique_id)
-        if device:
-            return device.get(DEVICE_ENTITY).get(target, None)
-        return None
+        return device.get(DEVICE_ENTITY).get(target, None) if device else None
 
     def set_device(self, unique_id, entity):
         """Set device entity."""
@@ -397,6 +394,7 @@ class DamdaEVChargerAPI:
     def parse_ev(self, target, result, url):
         """Parse EV Charge Station data."""
         data = {}
+        now = datetime.now(timezone.utc).astimezone(ZONE)
         r_res = result.get("response", {})
         r_header = r_res.get("header", {})
         r_code = r_header.get("resultCode", "99")
@@ -407,6 +405,7 @@ class DamdaEVChargerAPI:
         try:
             if ERROR_CODE.get(r_code, None) is None:
                 if target == CAST_EI:
+                    self.info_time = now
                     last_page = (r_total // 9999) + 1
                     if self.station_page != last_page:
                         self.station_page = int(
@@ -425,7 +424,7 @@ class DamdaEVChargerAPI:
             )
         log(
             0,
-            f"{target} -> total:{r_total} page:{r_page} row:{r_row} > data:{len(data)}",
+            f"{target} -> total:{r_total} page:{r_page} row:{r_row} > data:{len(data)} > {url}",
         )
         return "EV", data
 
@@ -436,7 +435,7 @@ class DamdaEVChargerAPI:
             now = datetime.now(timezone.utc).astimezone(ZONE)
             if self.info_time is None or (
                 isinstance(self.info_time, datetime)
-                and now - self.info_time > timedelta(seconds=3600)
+                and now - self.info_time > timedelta(seconds=3600 * 6)
             ):
                 last_page = (self.station_page + 1) if self.station_page > 0 else 101
                 for i in range(1, last_page):
@@ -476,7 +475,7 @@ class DamdaEVChargerAPI:
         """Get AirKorea data."""
         return await self.get_target("EV", [CAST_EI, CAST_ES])
 
-    async def update(self):
+    async def update(self, event):
         """Update data from KMA and AirKorea."""
         try:
             now_dt = datetime.now(timezone.utc).astimezone(ZONE)
@@ -491,7 +490,10 @@ class DamdaEVChargerAPI:
                 if self.hass.data[DOMAIN][ENTRY_LIST][0] == self.entry.entry_id:
                     ev = await self.get_ev()
                     self.hass.data[DOMAIN]["last_update"] = now_dt
-                self.hass.data[DOMAIN][EV_DATA].update(ev)
+                for uid, data in ev.items():
+                    station_name = data.get(ITEM_ST_NAME, "")
+                    if self.station in station_name:
+                        self.hass.data[DOMAIN][EV_DATA][uid] = data
             else:
                 ev.update(self.hass.data[DOMAIN][EV_DATA])
 
@@ -676,10 +678,8 @@ class DamdaEVChargerAPI:
                 self.init_device(unique_id, target_domain, entity)
                 self.update_entity(unique_id, entity)
             if len(ev_result) > 0:
-                log(
-                    1,
-                    f"{self.station} Update > {now_dt.strftime(DT_FMT2)} > Total:{len(self.hass.data[DOMAIN][EV_DATA])} Entity:{len(ev_result)}/{len(self.result)}",
-                )
+                msg = f"{self.station} Update > {now_dt.strftime(DT_FMT2)} > Total:{len(self.hass.data[DOMAIN][EV_DATA])} Entity:{len(ev_result)}/{len(self.result)}"
+                log(0, msg)
         except Exception as ex:
             log(
                 3,

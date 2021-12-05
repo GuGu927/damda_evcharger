@@ -62,7 +62,9 @@ class DEVChargerBinarySensor(DEVChargerDevice, BinarySensorEntity):
     @property
     def is_on(self):
         """Return true if sensor is on."""
-        return self.api.get_state(self.unique_id)
+        state = self.api.get_state(self.unique_id)
+        if state is not None:
+            return state
 
     @property
     def device_class(self):
