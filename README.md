@@ -23,7 +23,7 @@ Damda EV Component
 | ------ | ---------- | ----------------------------------------------------------------------- |
 | v1.0.0 | 2021.11.11 | 게시                                                                    |
 | v1.1.0 | 2021.12.05 | HA시작 속도에 영향을 주지 않도록 수정<br>기타 버그 수정                 |
-| v1.1.1 | 2021.12.06 | 충전,과점유,주차 시간 표시방법을 `x:xx:xx`에서 `x일 x시간 x분`으로 변경 |
+| v1.1.2 | 2021.12.06 | 충전,과점유,주차 시간 표시방법을 `x:xx:xx`에서 `x일 x시간 x분`으로 변경 |
 
 <br/>
 
@@ -80,5 +80,5 @@ Damda EV Component
 - API key에는 공공데이터포털에서 발급받은 API 키를 입력.
 - Station name에는 위에서 찾은 측정소명을 입력.
 
-[version-shield]: https://img.shields.io/badge/version-v1.1.0-orange.svg
+[version-shield]: https://img.shields.io/badge/version-v1.1.2-orange.svg
 [hacs-shield]: https://img.shields.io/badge/HACS-Custom-red.svg

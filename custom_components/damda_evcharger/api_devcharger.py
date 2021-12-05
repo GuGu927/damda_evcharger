@@ -150,7 +150,7 @@ def to_datetime(v):
 def to_dhm(td):
     """Convert timedelta to day,hour and minute."""
     if td.seconds == 0:
-        return str(td)
+        return "대기중"
     dhm = [str((td.seconds // 60) % 60) + "분"]
     if (td.seconds // 3600) > 0:
         dhm.insert(0, str(td.seconds // 3600) + "시간")
@@ -625,7 +625,7 @@ class DamdaEVChargerAPI:
                             None,
                             time_last_charge.strftime(DT_FMT2)
                             if charge_time > 0
-                            else str(timedelta(seconds=0)),
+                            else to_dhm(timedelta(seconds=0)),
                             f"{entity_id}_charge_start",
                             f"{entity_name} 충전시작시간",
                             "mdi:clock-outline",
@@ -635,7 +635,7 @@ class DamdaEVChargerAPI:
                             None,
                             time_last_complete.strftime(DT_FMT2)
                             if charge_complete
-                            else str(timedelta(seconds=0)),
+                            else to_dhm(timedelta(seconds=0)),
                             f"{entity_id}_charge_end",
                             f"{entity_name} 충전완료시간",
                             "mdi:clock-outline",
