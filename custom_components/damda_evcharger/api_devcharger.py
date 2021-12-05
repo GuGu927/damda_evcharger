@@ -147,6 +147,18 @@ def to_datetime(v):
     return dt
 
 
+def to_dhm(td):
+    """Convert timedelta to day,hour and minute."""
+    if td.seconds == 0:
+        return str(td)
+    dhm = [str((td.seconds // 60) % 60) + "분"]
+    if (td.seconds // 3600) > 0:
+        dhm.insert(0, str(td.seconds // 3600) + "시간")
+    if td.days > 0:
+        dhm.insert(0, str(td.days) + "일")
+    return " ".join(dhm)
+
+
 class DamdaEVChargerAPI:
     """DamdaEVChargerAPI API."""
 
@@ -631,7 +643,7 @@ class DamdaEVChargerAPI:
                         f"{unique_id}_charge_time": [
                             SENSOR_DOMAIN,
                             None,
-                            str(timedelta(seconds=charge_time)),
+                            to_dhm(timedelta(minutes=charge_time)),
                             f"{entity_id}_charge_time",
                             f"{entity_name} 충전시간",
                             "mdi:clock-outline",
@@ -639,7 +651,7 @@ class DamdaEVChargerAPI:
                         f"{unique_id}_charge_over": [
                             SENSOR_DOMAIN,
                             None,
-                            str(timedelta(seconds=over_parking)),
+                            to_dhm(timedelta(minutes=over_parking)),
                             f"{entity_id}_charge_over",
                             f"{entity_name} 과점유시간",
                             "mdi:clock-outline",
@@ -647,7 +659,7 @@ class DamdaEVChargerAPI:
                         f"{unique_id}_charge_parking": [
                             SENSOR_DOMAIN,
                             None,
-                            str(timedelta(seconds=parking_time)),
+                            to_dhm(timedelta(minutes=parking_time)),
                             f"{entity_id}_charge_parking",
                             f"{entity_name} 주차시간",
                             "mdi:clock-outline",
