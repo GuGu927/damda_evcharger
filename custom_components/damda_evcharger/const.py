@@ -3,15 +3,16 @@ from homeassistant.components.sensor import DOMAIN as SENSOR_DOMAIN
 from homeassistant.components.binary_sensor import DOMAIN as BSENSOR_DOMAIN
 from homeassistant.const import DEVICE_CLASS_TIMESTAMP
 
-VERSION = "1.0.0"
+VERSION = "1.2.0"
 BRAND = "Damda"
 NAME = "Damda EV"
 NAME_KOR = "담다EV"
 DOMAIN = "damda_evcharger"
-MODEL = "de"
+MODEL = "damda_ev"
 MANUFACTURER = "data.go.kr"
 API_NAME = "de_api"
 EV_DATA = "de_data"
+EV_DATA2 = "de_data2"
 PLATFORMS = [SENSOR_DOMAIN, BSENSOR_DOMAIN]
 
 ENTRY_LIST = "entry_list"
@@ -37,8 +38,6 @@ CONF_API = "api_key"
 CONF_EV = "ev_station"
 CONF_PERSON = "ev_person"
 CONF_NEAR = "ev_near"
-CONF_ZONE = "zone"
-CONF_ZC = "zone_code"
 Z_CODE_ID = {
     "11": "서울",
     "26": "부산",
@@ -175,7 +174,7 @@ EV_ITEM = {
     ],
     ITEM_CH_TP: [
         "charger_type",
-        "충전기ID",
+        "충전기종류",
         CHARGER_TYPE,
         SENSOR_DOMAIN,
         conv_charger_icon,

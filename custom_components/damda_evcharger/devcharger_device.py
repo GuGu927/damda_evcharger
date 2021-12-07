@@ -3,9 +3,7 @@ from homeassistant.helpers.restore_state import RestoreEntity
 from homeassistant.core import callback
 
 from .const import (
-    CAST_TYPE,
     DEVICE_ATTR,
-    DEVICE_ENTITY,
     DEVICE_ID,
     DEVICE_NAME,
     DOMAIN,
@@ -47,15 +45,6 @@ class DEVChargerBase:
         return self._device[DEVICE_UNIQUE]
 
     @property
-    def cast_type(self) -> str:
-        """Get Cast Type."""
-        return (
-            self._device.get(DEVICE_ENTITY, {DEVICE_ATTR: {CAST_TYPE: ""}})
-            .get(DEVICE_ATTR)
-            .get(CAST_TYPE)
-        )
-
-    @property
     def device_info(self):
         """Return device registry information for this entity."""
         return {
@@ -65,10 +54,10 @@ class DEVChargerBase:
                     self.unique_id,
                 )
             },
-            "identifiers": {(DOMAIN, f"{self.api.station}_{self.cast_type}")},
-            "manufacturer": f"{self.api.brand}",
-            "model": f"{self.api.brand}_{self.api.version}",
-            "name": f"{self.api.name} {self.cast_type}",
+            "identifiers": {(DOMAIN, f"{self.api.station}")},
+            "manufacturer": self.api.manufacturer,
+            "model": self.api.model,
+            "name": self.api.station,
             "sw_version": self.api.version,
             "via_device": (DOMAIN, self.api.station),
         }

@@ -11,23 +11,21 @@ from homeassistant import config_entries
 
 from .const import (
     CONF_EV,
-    # CONF_ZC,
     DOMAIN,
     CONF_API,
-    # ZC_LIST,
-)  # , CONF_NEAR, CONF_PERSON,
+    # CONF_NEAR, CONF_PERSON,
+)
 
 STEP_USER_DATA_SCHEMA = {
     vol.Required(CONF_API): str,
-    # vol.Required(CONF_ZC, default=[]): cv.multi_select(ZC_LIST),
     vol.Optional(CONF_EV, default=""): str,
 }
 
 
 def make_unique(i):
     """Make unique_id."""
-    # return f"{i[CONF_API]}_{i[CONF_ZC][0]}_{i[CONF_EV]}"
-    return f"{i[CONF_API]}_{i[CONF_EV]}"
+    key = i.get(CONF_API)
+    return f"{key}_{i[CONF_EV]}"
 
 
 def check_key(i):
@@ -55,15 +53,10 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         if user_input is not None:
             user_input = check_key(user_input)
-            # if len(user_input[CONF_ZC]) != 1:
-            #     self.async_abort(reason="Must choose only 1 zone.")
-            # else:
             await self.async_set_unique_id(make_unique(user_input))
             self._abort_if_unique_id_configured()
-            # zone_name = user_input[CONF_ZC][0]
             return self.async_create_entry(
-                # title=f"{zone_name} {user_input[CONF_EV]}", data=user_input
-                title=f"{user_input[CONF_EV]}",
+                title=user_input[CONF_EV],
                 data=user_input,
             )
 
