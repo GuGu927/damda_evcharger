@@ -16,5 +16,17 @@
       "abort": {
         "already_configured": "\uAC19\uC740 \uC815\uBCF4\uB97C \uAC00\uC9C4 \uAD6C\uC131\uC694\uC18C\uAC00 \uC774\uBBF8 \uC788\uC2B5\uB2C8\uB2E4. "
       }
+    },
+    "options": {
+      "step": {
+        "init": {
+          "title": "\uB2F4\uB2E4 EV \uC635\uC158",
+          "data": {
+            "name": "\uAD6C\uC131\uC694\uC18C\uC758 \uC774\uB984.",
+            "api_key": "data.go.kr \uC5D0\uC11C \uBC1C\uAE09\uBC1B\uC740 API\uD0A4.",
+            "monitoring": "\uC5C5\uB370\uC774\uD2B8 \uC2DC\uAC04\uC744 \uAE30\uB85D\uD569\uB2C8\uB2E4."
+          }
+        }
+      }
     }
 }

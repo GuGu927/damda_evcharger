@@ -22,6 +22,7 @@ from .const import (
     CAST_ES,
     CAST_EI,
     CAST_TYPE,
+    CHARGE_ERROR,
     CHARGE_READY,
     CHARGE_START,
     # CHARGER_ICON,
@@ -47,9 +48,9 @@ from .const import (
     ENTRY_LIST,
     ERROR_CODE,
     EV_DATA,
-    EV_DATA2,
     EV_INFO_URL,
     EV_ITEM,
+    EV_LIST,
     EV_STATUS_URL,
     ITEM_BS_ID,
     ITEM_CH_ID,
@@ -65,6 +66,7 @@ from .const import (
     MODEL,
     NAME,
     NAME_KOR,
+    OPT_MONITORING,
     VERSION,
     SENSOR_DOMAIN,
     BSENSOR_DOMAIN,
@@ -75,8 +77,7 @@ _LOGGER = logging.getLogger(__name__)
 ZONE = ZoneInfo("Asia/Seoul")
 DT_FMT = "%Y%m%d%H%M%S"
 DT_FMT2 = "%Y-%m-%d %H:%M"
-
-DEBUG = False
+DEBUG = True
 
 
 @callback
@@ -85,9 +86,9 @@ def get_api(hass, entry):
     return hass.data[DOMAIN][API_NAME].get(entry.entry_id)
 
 
-def log(flag, val, debug=False):
+def log(flag, val):
     """0:debug, 1:info, 2:warning, 3:error."""
-    if flag == 0 and (DEBUG or debug):
+    if flag == 0:
         _LOGGER.debug(f"[{NAME}] {val}")
     elif flag == 1:
         _LOGGER.info(f"[{NAME}] {val}")
@@ -185,7 +186,9 @@ class DamdaEVChargerAPI:
         self.result = {}
         self.listeners = []
         self._start = False
-        log(1, f"Loading API > {self.station}")
+        if self.station_id is not None:
+            self.hass.data[DOMAIN][EV_LIST].append(self.station_id)
+        self.log(1, "Loading API")
 
     def load(self, domain, async_add_entity):
         """Component loaded."""
@@ -197,7 +200,7 @@ class DamdaEVChargerAPI:
         )
         if self.complete and not self._start:
             self._start = True
-        log(1, f"Component loaded [{self.station}] -> {domain}")
+        self.log(1, f"Component loaded -> {domain}")
 
     @property
     def complete(self):
@@ -212,6 +215,11 @@ class DamdaEVChargerAPI:
         """Return True if main api."""
         return self.hass.data[DOMAIN][ENTRY_LIST][0] == self.entry.entry_id
 
+    def log(self, level, msg, isMonitor=False):
+        """Log."""
+        if not isMonitor or (isMonitor and self.get_option(OPT_MONITORING, False)):
+            log(level, f"[{self.station}] {msg}")
+
     def set_data(self, key, value):
         """Set entry data."""
         self.hass.config_entries.async_update_entry(
@@ -222,6 +230,10 @@ class DamdaEVChargerAPI:
     def get_data(self, key, default=False):
         """Get entry data."""
         return self.entry.data.get(key, default)
+
+    def get_option(self, name, default=False):
+        """Get entry option."""
+        return self.entry.options.get(name, default)
 
     @property
     def manufacturer(self) -> str:
@@ -293,7 +305,7 @@ class DamdaEVChargerAPI:
         if domain in self.entities:
             self.entities[domain].setdefault(unique_id, False)
         if unique_id not in self.device:
-            log(
+            self.log(
                 0,
                 f"Initialize device of {self.station} > {domain} > {unique_id}",
             )
@@ -327,10 +339,10 @@ class DamdaEVChargerAPI:
     def set_entity(self, domain, unique_id, state=False):
         """Set self.entities domain unique_id True/False."""
         if domain not in self.entities:
-            log(1, f"set_entity > {domain} not exist.")
+            self.log(1, f"set_entity > {domain} not exist.")
             pass
         if unique_id not in self.entities[domain]:
-            log(1, f"set_entity > {domain} > {unique_id} not exist.")
+            self.log(1, f"set_entity > {domain} > {unique_id} not exist.")
             pass
         if state:
             self.entities[domain][unique_id] = state
@@ -351,7 +363,7 @@ class DamdaEVChargerAPI:
             try:
                 self.device[unique_id][DEVICE_ENTITY].update(entity)
             except Exception as ex:
-                log(3, f"Set entity error > {unique_id} > {entity} > {ex}")
+                self.log(3, f"Set entity error > {unique_id} > {entity} > {ex}")
 
     def register_update_state(self, unique_id, cb=None):
         """Register device update function to update entity state."""
@@ -361,7 +373,7 @@ class DamdaEVChargerAPI:
                 device.get(DEVICE_UPDATE) is not None and cb is None
             ):
                 msg = f"{'Register' if cb is not None else 'Unregister'} device => {unique_id}"
-                log(0, msg)
+                self.log(0, msg)
                 self.device[unique_id][DEVICE_UPDATE] = cb
 
     def update_entity(self, unique_id, entity, available=True):
@@ -434,15 +446,19 @@ class DamdaEVChargerAPI:
                 if items is not None:
                     r_item = items.get("item", [])
                     for c in r_item:
+                        station_name = c.get(ITEM_ST_NAME, "")
                         station_id = c.get(ITEM_ST_ID)
                         charger_id = c.get(ITEM_CH_ID)
                         data[f"{station_id}:{charger_id}"] = c
+                        if self.station in station_name and self.station_id is None:
+                            self.station_id = self.set_data("station_id", station_id)
+                            self.hass.data[DOMAIN][EV_LIST].append(self.station_id)
         except Exception as ex:
-            log(
+            self.log(
                 3,
                 f"target [{target}] > {r_msg} > {url} > {ex}",
             )
-        log(
+        self.log(
             0,
             f"{target} -> total:{r_total} page:{r_page} row:{r_row} > data:{len(data)} > {url}",
         )
@@ -510,7 +526,7 @@ class DamdaEVChargerAPI:
             for t in task_list:
                 await t
         except Exception as ex:
-            log(3, f"Error at get_target > [{target}] > {ex}")
+            self.log(3, f"Error at get_target > [{target}] > {ex}")
         return data
 
     async def get_ev(self):
@@ -522,31 +538,31 @@ class DamdaEVChargerAPI:
         try:
             now_dt = datetime.now(timezone.utc).astimezone(ZONE)
             now_fmt = now_dt.strftime(DT_FMT)
-            ev = {}
 
             if self.last_update is None:
-                if self.updater:
-                    ev = await self.get_ev()
-                    self.last_update = now_dt
-                    self.hass.data[DOMAIN][EV_DATA].update(ev)
-                elif len(self.hass.data[DOMAIN][EV_DATA]) > 0:
-                    ev.update(self.hass.data[DOMAIN][EV_DATA])
-                    self.last_update = now_dt
-            elif now_dt - self.last_update >= timedelta(seconds=120):
-                for uid, data in self.hass.data[DOMAIN][EV_DATA].items():
-                    station_name = data.get(ITEM_ST_NAME, "")
-                    if self.station in station_name:
-                        ev[uid] = data
-                if self.updater:
-                    data = await self.get_ev()
-                    ev.update(data)
-                    self.hass.data[DOMAIN][EV_DATA2] = ev
-                elif len(self.hass.data[DOMAIN][EV_DATA2]) > 0:
-                    ev.update(self.hass.data[DOMAIN][EV_DATA2])
                 self.last_update = now_dt
+                if self.updater:
+                    ev_data = await self.get_ev()
+                    self.hass.data[DOMAIN][EV_DATA].update(ev_data)
+            elif now_dt - self.last_update >= timedelta(seconds=120):
+                self.last_update = now_dt
+                if self.updater:
+                    ev_data = await self.get_ev()
+                    for uid, data in ev_data.items():
+                        if uid in self.hass.data[DOMAIN][EV_DATA]:
+                            for k, v in data.items():
+                                self.hass.data[DOMAIN][EV_DATA][uid][k] = v
+            ev = {
+                uid: data
+                for uid, data in self.hass.data[DOMAIN][EV_DATA].items()
+                if self.station_id in uid
+            }
 
+            charger_count = 0
+            charger_updated = []
             ev_result = {}
-            for data in ev.values():
+            ev_updated = []
+            for uid, data in ev.items():
                 # 메인센서 = binary_sensor
                 # 메인센서 = 이름:충전가능여부
                 # 메인센서 = 이름:충전완료여부
@@ -557,8 +573,10 @@ class DamdaEVChargerAPI:
                 # 서브센서 = 이름:충전종료 후 과점유시간, state ready >> now - complete
                 # 서브센서 = 이름:주차시간, unplug<charge, now - plug
                 station_name = data.get(ITEM_ST_NAME, "")
+                station_id = data.get(ITEM_ST_ID, "")
 
-                if self.station in station_name:
+                if self.station in station_name or self.station_id in uid:
+                    charger_count += 1
                     attr = {CAST_TYPE: self.station}
                     for category, c_list in EV_ITEM.items():
                         if category in [
@@ -597,8 +615,13 @@ class DamdaEVChargerAPI:
                     )
                     entity_id = f"{header}_{station_id}_{charger_id}".lower()
                     entity_name = f"{self.station}{charger_id}"
-                    old_state = self.get_state(unique_id + "state")
-                    self.set_data(unique_id + "state", state)
+                    old_state = self.get_data(unique_id + "state")
+                    if state != old_state and state != CHARGE_ERROR:
+                        msg = f"{self.station} Update > Charger:{entity_name} from:{old_state} to:{state}"
+                        self.log(1, msg, False)
+                        charger_updated.append(entity_name)
+                    if state != CHARGE_ERROR:
+                        self.set_data(unique_id + "state", state)
                     time_last_complete = to_datetime(
                         self.get_data(unique_id + "time", now_fmt)
                     )
@@ -608,7 +631,9 @@ class DamdaEVChargerAPI:
                         )
                         time_last_complete = time_last_change
                     charge_time, over_parking, parking_time = 0, 0, 0
-                    if state == CHARGE_START:
+                    if state == CHARGE_START or (
+                        old_state == CHARGE_START and state == CHARGE_ERROR
+                    ):
                         charge_time = dif_min(now_dt, time_last_charge)
                     if (
                         state == CHARGE_READY
@@ -692,8 +717,6 @@ class DamdaEVChargerAPI:
                             "mdi:clock-outline",
                         ],
                     }
-                    if self.station_id is None:
-                        self.station_id = self.set_data("station_id", station_id)
                     update_attr = attr.copy()
                     pop_list = [
                         "충전기ID",
@@ -709,12 +732,16 @@ class DamdaEVChargerAPI:
                     for p in pop_list:
                         if p in update_attr:
                             update_attr.pop(p)
-                    self.station_attr = self.set_data("station_attr", update_attr)
+                    if update_attr != self.station_attr:
+                        self.station_attr = self.set_data("station_attr", update_attr)
                     for uid, ulist in entity_list.items():
                         if self.get_state(uid) != ulist[2]:
+                            ev_updated.append(ulist[4])
                             ev_result[uid] = self.make_entity(
                                 attr
-                                if "_charge_available" in uid
+                                if (
+                                    "_charge_available" in uid or "_charge_state" in uid
+                                )
                                 else {CAST_TYPE: self.station},
                                 ulist[5],
                                 ulist[1],
@@ -748,15 +775,17 @@ class DamdaEVChargerAPI:
             for unique_id, entity in self.result.items():
                 target_domain = entity.get(DEVICE_DOMAIN)
                 if not target_domain:
-                    log(1, f"Device domain does not exist > {unique_id} > {entity}")
+                    self.log(
+                        1, f"Device domain does not exist > {unique_id} > {entity}"
+                    )
                     continue
                 self.init_device(unique_id, target_domain, entity)
                 self.update_entity(unique_id, entity)
-            if len(ev_result) > 0:
-                msg = f"{self.station} Update > {now_dt.strftime(DT_FMT2)} > Total:{len(self.hass.data[DOMAIN][EV_DATA])} Entity:{len(ev_result)}/{len(self.result)}"
-                log(0, msg)
+            if len(ev_result) > 0 or len(charger_updated) > 0:
+                msg = f"Update > Total Station:{len(self.hass.data[DOMAIN][EV_DATA])}  Charger:{len(charger_updated)}/{charger_count}  Entity:{len(ev_result)}/{len(self.result)-1} > {','.join(ev_updated)}"
+                self.log(1, msg, True)
         except Exception as ex:
-            log(
+            self.log(
                 3,
-                f"{self.station} Update Fail > {ex}",
+                f"Update Fail > {ex}",
             )

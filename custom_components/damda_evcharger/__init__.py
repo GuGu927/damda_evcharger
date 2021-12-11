@@ -8,7 +8,16 @@ import logging
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
-from .const import DOMAIN, ENTRY_LIST, EV_DATA, PLATFORMS, NAME, BRAND, API_NAME
+from .const import (
+    DOMAIN,
+    ENTRY_LIST,
+    EV_DATA,
+    EV_LIST,
+    PLATFORMS,
+    NAME,
+    BRAND,
+    API_NAME,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -31,6 +40,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data.setdefault(DOMAIN, {})
     hass.data[DOMAIN].setdefault(API_NAME, {})
     hass.data[DOMAIN].setdefault(EV_DATA, {})
+    hass.data[DOMAIN].setdefault(EV_LIST, [])
     hass.data[DOMAIN].setdefault(ENTRY_LIST, [])
     hass.data[DOMAIN].setdefault(entry.entry_id, {})
     hass.data[DOMAIN][ENTRY_LIST].append(entry.entry_id)
