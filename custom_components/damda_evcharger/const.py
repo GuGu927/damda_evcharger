@@ -2,9 +2,9 @@
 import homeassistant.helpers.config_validation as cv
 from homeassistant.components.sensor import DOMAIN as SENSOR_DOMAIN
 from homeassistant.components.binary_sensor import DOMAIN as BSENSOR_DOMAIN
-from homeassistant.const import DEVICE_CLASS_TIMESTAMP
+from homeassistant.components.sensor import SensorDeviceClass
 
-VERSION = "1.2.1"
+VERSION = "1.2.2"
 BRAND = "Damda"
 NAME = "Damda EV"
 NAME_KOR = "담다EV"
@@ -268,7 +268,7 @@ EV_ITEM = {
         None,
         SENSOR_DOMAIN,
         "mdi:clock-outline",
-        DEVICE_CLASS_TIMESTAMP,
+        SensorDeviceClass.TIMESTAMP,
     ],
     ITEM_LAST_CS: [
         "time_last_plug",
@@ -276,7 +276,7 @@ EV_ITEM = {
         None,
         SENSOR_DOMAIN,
         "mdi:clock-outline",
-        DEVICE_CLASS_TIMESTAMP,
+        SensorDeviceClass.TIMESTAMP,
     ],
     ITEM_LAST_CE: [
         "time_last_unplug",
@@ -284,7 +284,7 @@ EV_ITEM = {
         None,
         SENSOR_DOMAIN,
         "mdi:clock-outline",
-        DEVICE_CLASS_TIMESTAMP,
+        SensorDeviceClass.TIMESTAMP,
     ],
     ITEM_LAST_C: [
         "time_last_charge",
@@ -292,7 +292,7 @@ EV_ITEM = {
         None,
         SENSOR_DOMAIN,
         "mdi:clock-outline",
-        DEVICE_CLASS_TIMESTAMP,
+        SensorDeviceClass.TIMESTAMP,
     ],
     ITEM_OUTPUT: [
         "charger_output",

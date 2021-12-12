@@ -25,13 +25,14 @@ Damda EV Component
 | v1.1.0 | 2021.12.05 | HA시작 속도에 영향을 주지 않도록 수정<br>기타 버그 수정                 |
 | v1.1.2 | 2021.12.06 | 충전,과점유,주차 시간 표시방법을 `x:xx:xx`에서 `x일 x시간 x분`으로 변경 |
 | v1.2.0 | 2021.12.08 | api호출 방식 변경 및 부분 리뉴얼로 인해 `재설치`를 권장합니다.          |
-| v1.2.1 | 2021.12.11 | 상태반영 버그 수정 및 오류 수정<br>히스토티 그래프 관련 수정            |
+| v1.2.1 | 2021.12.11 | 상태반영 버그 수정 및 오류 수정<br>히스토리 그래프 관련 수정            |
+| v1.2.2 | 2021.12.12 | 2012.12 버전 업데이트 반영                                              |
 
 <br/>
 
 ## 준비물
 
-- HomeAssistant `최신버전`(**2021.9.0 이상**)
+- HomeAssistant `최신버전`(**2021.12.0 이상**)
 - HomeAssistant OS, Core, Container 등 아무런 상관이 없습니다.
 
 <br/>
@@ -82,5 +83,5 @@ Damda EV Component
 - API key에는 공공데이터포털에서 발급받은 API 키를 입력.
 - Station name에는 위에서 찾은 측정소명을 입력.
 
-[version-shield]: https://img.shields.io/badge/version-v1.2.1-orange.svg
+[version-shield]: https://img.shields.io/badge/version-v1.2.2-orange.svg
 [hacs-shield]: https://img.shields.io/badge/HACS-Custom-red.svg
