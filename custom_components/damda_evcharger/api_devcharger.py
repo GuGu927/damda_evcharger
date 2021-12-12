@@ -183,11 +183,11 @@ class DamdaEVChargerAPI:
         }  # unique_id: True/False
         self.loaded = {SENSOR_DOMAIN: False, BSENSOR_DOMAIN: False}
         self.last_update = None
+        if len(self.hass.data[DOMAIN][EV_DATA]) > 0:
+            self.last_update = datetime.now(timezone.utc).astimezone(ZONE)
         self.result = {}
         self.listeners = []
         self._start = False
-        if self.station_id is not None:
-            self.hass.data[DOMAIN][EV_LIST].append(self.station_id)
         self.log(1, "Loading API")
 
     def load(self, domain, async_add_entity):
@@ -276,10 +276,15 @@ class DamdaEVChargerAPI:
         args = []
         unique_id = device.get(DEVICE_UNIQUE, None)
         domain = device.get(DEVICE_DOMAIN)
-        if self.search_entity(domain, unique_id) or not self.loaded.get(domain, False):
+        if (
+            self.search_entity(domain, unique_id)
+            or not self.loaded.get(domain, False)
+            or unique_id in self.hass.data[DOMAIN][EV_LIST]
+        ):
             return
 
         args.append([device])
+        self.hass.data[DOMAIN][EV_LIST].append(unique_id)
 
         async_dispatcher_send(self.hass, self.async_signal_new_device(domain), *args)
 
@@ -452,7 +457,6 @@ class DamdaEVChargerAPI:
                         data[f"{station_id}:{charger_id}"] = c
                         if self.station in station_name and self.station_id is None:
                             self.station_id = self.set_data("station_id", station_id)
-                            self.hass.data[DOMAIN][EV_LIST].append(self.station_id)
         except Exception as ex:
             self.log(
                 3,
@@ -535,6 +539,7 @@ class DamdaEVChargerAPI:
 
     async def update(self, event):  # noqa: C901
         """Update data from KMA and AirKorea."""
+        ev = {}
         try:
             now_dt = datetime.now(timezone.utc).astimezone(ZONE)
             now_fmt = now_dt.strftime(DT_FMT)
@@ -555,9 +560,16 @@ class DamdaEVChargerAPI:
             ev = {
                 uid: data
                 for uid, data in self.hass.data[DOMAIN][EV_DATA].items()
-                if self.station_id in uid
+                if (self.station_id is not None and self.station_id in uid)
+                or self.station in data.get(ITEM_ST_NAME, "")
             }
+        except Exception as ex:
+            self.log(
+                3,
+                f"Update get data fail > {ex}",
+            )
 
+        try:
             charger_count = 0
             charger_updated = []
             ev_result = {}
@@ -576,6 +588,8 @@ class DamdaEVChargerAPI:
                 station_id = data.get(ITEM_ST_ID, "")
 
                 if self.station in station_name or self.station_id in uid:
+                    if self.station_id is None:
+                        self.station_id = self.set_data("station_id", station_id)
                     charger_count += 1
                     attr = {CAST_TYPE: self.station}
                     for category, c_list in EV_ITEM.items():
@@ -616,7 +630,11 @@ class DamdaEVChargerAPI:
                     entity_id = f"{header}_{station_id}_{charger_id}".lower()
                     entity_name = f"{self.station}{charger_id}"
                     old_state = self.get_data(unique_id + "state")
-                    if state != old_state and state != CHARGE_ERROR:
+                    if (
+                        state != old_state
+                        and state != CHARGE_ERROR
+                        and old_state is not False
+                    ):
                         msg = f"{self.station} Update > Charger:{entity_name} from:{old_state} to:{state}"
                         self.log(1, msg, False)
                         charger_updated.append(entity_name)
@@ -738,11 +756,7 @@ class DamdaEVChargerAPI:
                         if self.get_state(uid) != ulist[2]:
                             ev_updated.append(ulist[4])
                             ev_result[uid] = self.make_entity(
-                                attr
-                                if (
-                                    "_charge_available" in uid or "_charge_state" in uid
-                                )
-                                else {CAST_TYPE: self.station},
+                                attr,
                                 ulist[5],
                                 ulist[1],
                                 ulist[0],

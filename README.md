@@ -27,6 +27,7 @@ Damda EV Component
 | v1.2.0 | 2021.12.08 | api호출 방식 변경 및 부분 리뉴얼로 인해 `재설치`를 권장합니다.          |
 | v1.2.1 | 2021.12.11 | 상태반영 버그 수정 및 오류 수정<br>히스토리 그래프 관련 수정            |
 | v1.2.2 | 2021.12.12 | 2021.12 버전 업데이트 대응                                              |
+| v1.2.3 | 2021.12.12 | 다수 충전소 등록 시 발생하는 오류 수정                                  |
 
 <br/>
 
@@ -83,5 +84,5 @@ Damda EV Component
 - API key에는 공공데이터포털에서 발급받은 API 키를 입력.
 - Station name에는 위에서 찾은 측정소명을 입력.
 
-[version-shield]: https://img.shields.io/badge/version-v1.2.2-orange.svg
+[version-shield]: https://img.shields.io/badge/version-v1.2.3-orange.svg
 [hacs-shield]: https://img.shields.io/badge/HACS-Custom-red.svg
