@@ -1,6 +1,6 @@
 """Damda EV's sensor entity."""
 from datetime import timedelta
-from homeassistant.components.sensor import DOMAIN
+from homeassistant.components.sensor import DOMAIN, SensorEntity
 from homeassistant.core import callback
 
 from .const import (
@@ -63,7 +63,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     async_add_entity()
 
 
-class DEVChargerSensor(DEVChargerDevice):
+class DEVChargerSensor(DEVChargerDevice, SensorEntity):
     """Representation of a Damda EV sensor."""
 
     TYPE = DOMAIN
