@@ -1,5 +1,5 @@
 """API for EV charging station from 'data.go.kr'."""
-from homeassistant.const import DEVICE_CLASS_TIMESTAMP
+from homeassistant.components.sensor import SensorDeviceClass
 from homeassistant.core import callback
 
 from homeassistant.helpers.dispatcher import (
@@ -775,11 +775,14 @@ class DamdaEVChargerAPI:
                 self.result[unique_id] = self.make_entity(
                     self.station_attr,
                     "mdi:clock-outline",
-                    DEVICE_CLASS_TIMESTAMP,
+                    SensorDeviceClass.TIMESTAMP,
                     SENSOR_DOMAIN,
-                    now_dt.isoformat()
+                    # now_dt.isoformat()
+                    # if self.last_update is None
+                    # else self.last_update.isoformat(),
+                    now_dt
                     if self.last_update is None
-                    else self.last_update.isoformat(),
+                    else self.last_update,
                     None,
                     unique_id,
                     entity_id,

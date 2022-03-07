@@ -4,7 +4,7 @@ from homeassistant.components.sensor import DOMAIN as SENSOR_DOMAIN
 from homeassistant.components.binary_sensor import DOMAIN as BSENSOR_DOMAIN
 from homeassistant.components.sensor import SensorDeviceClass
 
-VERSION = "1.2.6"
+VERSION = "1.2.7"
 BRAND = "Damda"
 NAME = "Damda EV"
 NAME_KOR = "담다EV"
