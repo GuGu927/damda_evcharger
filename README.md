@@ -15,8 +15,6 @@ Damda EV Component
 
 <a href="https://paypal.me/rangee927" target="_blank"><img src="https://www.paypalobjects.com/webstatic/en_US/i/buttons/PP_logo_h_150x38.png" alt="PayPal"></a>
 
-<a href="https://www.buymeacoffee.com/rangee" target="_blank"><img src="https://www.buymeacoffee.com/assets/img/custom_images/white_img.png" alt="Buy Me A Coffee"></a>
-
 ## 버전 기록정보
 
 | 버전   | 날짜       | 내용                                                                    |
@@ -32,6 +30,7 @@ Damda EV Component
 | v1.2.5 | 2021.12.23 | 통계그래프 가능하게끔 수정                                              |
 | v1.2.6 | 2022.01.04 | 오류 수정                                                               |
 | v1.2.7 | 2022.03.07 | 2022.3 업데이트 대응(sensor 의 datetime/time deprecated 관련)           |
+| v1.2.8 | 2022.05.12 | 업데이트 오류 시 멈추는 현상 수정                                       |
 
 <br/>
 
@@ -88,5 +87,5 @@ Damda EV Component
 - API key에는 공공데이터포털에서 발급받은 API 키를 입력.
 - Station name에는 위에서 찾은 측정소명을 입력.
 
-[version-shield]: https://img.shields.io/badge/version-v1.2.7-orange.svg
+[version-shield]: https://img.shields.io/badge/version-v1.2.8-orange.svg
 [hacs-shield]: https://img.shields.io/badge/HACS-Custom-red.svg

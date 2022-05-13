@@ -10,6 +10,7 @@ import logging
 import requests
 import json
 import xmltodict
+import time
 
 from urllib.parse import urlparse
 from urllib.parse import parse_qs
@@ -188,6 +189,7 @@ class DamdaEVChargerAPI:
         self.result = {}
         self.listeners = []
         self._start = False
+        self._last_error = 0
         self.log(1, "Loading API")
 
     def load(self, domain, async_add_entity):
@@ -540,34 +542,39 @@ class DamdaEVChargerAPI:
     async def update(self, event):  # noqa: C901
         """Update data from KMA and AirKorea."""
         ev = {}
-        try:
-            now_dt = datetime.now(timezone.utc).astimezone(ZONE)
-            now_fmt = now_dt.strftime(DT_FMT)
+        if time.time() - self._last_error > 10 * 60:
+            try:
+                now_dt = datetime.now(timezone.utc).astimezone(ZONE)
+                now_fmt = now_dt.strftime(DT_FMT)
 
-            if self.last_update is None:
-                self.last_update = now_dt
-                if self.updater:
-                    ev_data = await self.get_ev()
-                    self.hass.data[DOMAIN][EV_DATA].update(ev_data)
-            elif now_dt - self.last_update >= timedelta(seconds=120):
-                self.last_update = now_dt
-                if self.updater:
-                    ev_data = await self.get_ev()
-                    for uid, data in ev_data.items():
-                        if uid in self.hass.data[DOMAIN][EV_DATA]:
-                            for k, v in data.items():
-                                self.hass.data[DOMAIN][EV_DATA][uid][k] = v
-            ev = {
-                uid: data
-                for uid, data in self.hass.data[DOMAIN][EV_DATA].items()
-                if (self.station_id is not None and self.station_id in uid)
-                or self.station in data.get(ITEM_ST_NAME, "")
-            }
-        except Exception as ex:
-            self.log(
-                3,
-                f"Update get data fail > {ex}",
-            )
+                if self.last_update is None:
+                    self.last_update = now_dt
+                    if self.updater:
+                        ev_data = await self.get_ev()
+                        self.hass.data[DOMAIN][EV_DATA].update(ev_data)
+                elif now_dt - self.last_update >= timedelta(seconds=120):
+                    self.last_update = now_dt
+                    if self.updater:
+                        ev_data = await self.get_ev()
+                        for uid, data in ev_data.items():
+                            if uid in self.hass.data[DOMAIN][EV_DATA]:
+                                for k, v in data.items():
+                                    self.hass.data[DOMAIN][EV_DATA][uid][k] = v
+                ev = {
+                    uid: data
+                    for uid, data in self.hass.data[DOMAIN][EV_DATA].items()
+                    if (self.station_id is not None and self.station_id in uid)
+                    or self.station in data.get(ITEM_ST_NAME, "")
+                }
+            except Exception as ex:
+                self.log(
+                    3,
+                    f"Update get data fail > {ex}",
+                )
+                self._last_error = time.time()
+                return
+        else:
+            return
 
         try:
             charger_count = 0
@@ -780,9 +787,7 @@ class DamdaEVChargerAPI:
                     # now_dt.isoformat()
                     # if self.last_update is None
                     # else self.last_update.isoformat(),
-                    now_dt
-                    if self.last_update is None
-                    else self.last_update,
+                    now_dt if self.last_update is None else self.last_update,
                     None,
                     unique_id,
                     entity_id,
