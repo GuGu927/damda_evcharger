@@ -31,6 +31,7 @@ Damda EV Component
 | v1.2.6 | 2022.01.04 | 오류 수정                                                               |
 | v1.2.7 | 2022.03.07 | 2022.3 업데이트 대응(sensor 의 datetime/time deprecated 관련)           |
 | v1.2.8 | 2022.05.12 | 업데이트 오류 시 멈추는 현상 수정                                       |
+| v1.2.9 | 2022.06.11 | interval 수정                                                           |
 
 <br/>
 
@@ -87,5 +88,5 @@ Damda EV Component
 - API key에는 공공데이터포털에서 발급받은 API 키를 입력.
 - Station name에는 위에서 찾은 측정소명을 입력.
 
-[version-shield]: https://img.shields.io/badge/version-v1.2.8-orange.svg
+[version-shield]: https://img.shields.io/badge/version-v1.2.9-orange.svg
 [hacs-shield]: https://img.shields.io/badge/HACS-Custom-red.svg
