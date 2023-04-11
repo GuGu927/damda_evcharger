@@ -32,6 +32,7 @@ Damda EV Component
 | v1.2.7 | 2022.03.07 | 2022.3 업데이트 대응(sensor 의 datetime/time deprecated 관련)           |
 | v1.2.8 | 2022.05.12 | 업데이트 오류 시 멈추는 현상 수정                                       |
 | v1.2.9 | 2022.06.11 | interval 수정                                                           |
+| v1.3.0 | 2023.04.11 | deprecated 대응                                                        |
 
 <br/>
 
