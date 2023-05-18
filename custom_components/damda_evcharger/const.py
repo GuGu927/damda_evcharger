@@ -131,7 +131,7 @@ def conv_charger_icon(value):
 
 CHARGE_ERROR = "통신이상"
 CHARGE_START = "충전중"
-CHARGE_READY = "충전대기"
+CHARGE_READY = "사용가능"
 CHARGE_STOP = "운영중지"
 CHARGE_CHECK = "점검중"
 CHARGE_UNKNOWN = "상태미확인"
@@ -140,12 +140,12 @@ CHARGE_UNKNOWN = "상태미확인"
 def conv_state(value):
     """Convert charger state."""
     return {
+        "0": "알수없음",
         "1": "통신이상",
-        "2": "충전대기",
+        "2": "사용가능",
         "3": "충전중",
         "4": "운영중지",
         "5": "점검중",
-        "9": "상태미확인",
     }.get(value, value)
 
 
